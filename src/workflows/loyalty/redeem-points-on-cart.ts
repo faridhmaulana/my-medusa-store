@@ -84,7 +84,7 @@ export const redeemPointsOnCartWorkflow = createWorkflow(
       (data) => {
         const cart = data.carts[0] as any
         const randomStr = Math.random().toString(36).substring(2, 8)
-        const uniqueId = ("POINTS-" + randomStr).toUpperCase()
+        const uniqueId = ("COINS-" + randomStr).toUpperCase()
 
         return {
           code: uniqueId,
@@ -106,7 +106,7 @@ export const redeemPointsOnCartWorkflow = createWorkflow(
           ],
           campaign: {
             name: uniqueId,
-            description: "Points redemption",
+            description: "Coin redemption",
             campaign_identifier: uniqueId,
             budget: {
               type: "usage" as const,

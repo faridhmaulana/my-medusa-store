@@ -32,7 +32,7 @@ completeCartWorkflow.hooks.validate(
     if (!customerId) {
       throw new MedusaError(
         MedusaError.Types.INVALID_DATA,
-        "Customer required for points redemption"
+        "Customer required for coin redemption"
       )
     }
 
@@ -40,7 +40,7 @@ completeCartWorkflow.hooks.validate(
     if (balance < pointsCost) {
       throw new MedusaError(
         MedusaError.Types.NOT_ALLOWED,
-        `Insufficient points. Required: ${pointsCost}, Available: ${balance}`
+        `Insufficient coins. Required: ${pointsCost}, Available: ${balance}`
       )
     }
 
@@ -54,7 +54,7 @@ completeCartWorkflow.hooks.validate(
       customer_id: customerId,
       type: "spend",
       points: pointsCost,
-      reason: "Points redemption for order",
+      reason: "Coin redemption for order",
       reference_id: cart.id,
       reference_type: "cart",
     })

@@ -23,7 +23,7 @@ export const deductBalanceStep = createStep(
     if (balance.balance < input.points) {
       throw new MedusaError(
         MedusaError.Types.NOT_ALLOWED,
-        `Insufficient points. Required: ${input.points}, Available: ${balance.balance}`
+        `Insufficient coins. Required: ${input.points}, Available: ${balance.balance}`
       )
     }
 

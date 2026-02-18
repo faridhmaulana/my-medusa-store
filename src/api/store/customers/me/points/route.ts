@@ -25,5 +25,5 @@ export async function GET(
     { order: { created_at: "DESC" }, take: 20 }
   )
 
-  res.json({ points: balance, transactions })
+  res.json({ coins: balance, transactions })
 }

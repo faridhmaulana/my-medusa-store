@@ -25,21 +25,21 @@ export const validateCartPointsOnlyStep = createStep(
       if (!config) {
         throw new MedusaError(
           MedusaError.Types.INVALID_DATA,
-          `Variant ${variantId} does not have a point configuration`
+          `Variant ${variantId} does not have a coin configuration`
         )
       }
 
       if (config.payment_type === "currency") {
         throw new MedusaError(
           MedusaError.Types.INVALID_DATA,
-          `Variant ${variantId} can only be purchased with currency, not points`
+          `Variant ${variantId} can only be purchased with currency, not coins`
         )
       }
 
       if (config.point_price === null || config.point_price === undefined) {
         throw new MedusaError(
           MedusaError.Types.INVALID_DATA,
-          `Variant ${variantId} does not have a point price set`
+          `Variant ${variantId} does not have a coin price set`
         )
       }
     }
@@ -48,7 +48,7 @@ export const validateCartPointsOnlyStep = createStep(
     if (balance < input.total_point_cost) {
       throw new MedusaError(
         MedusaError.Types.NOT_ALLOWED,
-        `Insufficient points. Required: ${input.total_point_cost}, Available: ${balance}`
+        `Insufficient coins. Required: ${input.total_point_cost}, Available: ${balance}`
       )
     }
 
