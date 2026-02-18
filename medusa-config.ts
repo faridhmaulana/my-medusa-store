@@ -46,5 +46,8 @@ module.exports = defineConfig({
         ],
       },
     },
+    {
+      resolve: "./src/modules/pointBalance",
+    },
   ],
 })
