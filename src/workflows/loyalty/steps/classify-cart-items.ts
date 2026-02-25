@@ -54,11 +54,11 @@ export const classifyCartItemsStep = createStep(
         continue
       }
 
-      // "both" items: include only if user selected, or if no selection provided (backward compat)
+      // "both" items: include only if explicitly selected
       if (config.payment_type === "both") {
-        const isSelected = input.selected_variant_ids
-          ? input.selected_variant_ids.includes(item.variant_id)
-          : true
+        const isSelected =
+          input.selected_variant_ids &&
+          input.selected_variant_ids.includes(item.variant_id)
 
         if (!isSelected) {
           continue

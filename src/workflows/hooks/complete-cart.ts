@@ -13,7 +13,7 @@ completeCartWorkflow.hooks.validate(
     const { data: carts } = await query.graph(
       {
         entity: "cart",
-        fields: ["id", "customer.*", "metadata", "items.*"],
+        fields: ["id", "customer.*", "metadata", "items.*", "promotions.*"],
         filters: {
           id: cart.id,
         },
@@ -25,6 +25,24 @@ completeCartWorkflow.hooks.validate(
 
     const fullCart = carts[0] as any
     const pointsCost = fullCart.metadata?.points_cost
+
+    // Additional validation: Check for promotion + coins conflict
+    // This is a defense-in-depth check - should already be blocked by updateCartPromotions hook
+    if (pointsCost && pointsCost > 0) {
+      const regularPromotions = (fullCart.promotions || []).filter(
+        (promo: any) => !promo.code?.startsWith("COINS-")
+      )
+
+      if (regularPromotions.length > 0) {
+        const promoCodes = regularPromotions
+          .map((p: any) => p.code)
+          .join(", ")
+        throw new MedusaError(
+          MedusaError.Types.NOT_ALLOWED,
+          `Cannot checkout with both regular promotions (${promoCodes}) and coins. Please remove promotions or coins before checkout.`
+        )
+      }
+    }
 
     // Guard: block checkout if cart has points-only items without coin redemption
     for (const item of fullCart.items || []) {

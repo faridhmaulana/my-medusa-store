@@ -11,7 +11,7 @@ import {
   releaseLockStep,
 } from "@medusajs/medusa/core-flows"
 import { updateCartPromotionsWorkflow } from "@medusajs/medusa/core-flows"
-import { PromotionActions } from "@medusajs/framework/utils"
+import { PromotionActions, MedusaError } from "@medusajs/framework/utils"
 import { classifyCartItemsStep } from "./steps/classify-cart-items"
 
 type RedeemPointsOnCartWorkflowInput = {
@@ -51,8 +51,21 @@ export const redeemPointsOnCartWorkflow = createWorkflow(
       },
     })
 
+    // Check for existing regular promotions - block if any exist
     const itemsData = transform({ carts }, (data) => {
       const cart = data.carts[0] as any
+      const regularPromotions = (cart.promotions || []).filter(
+        (promo: any) => !promo.code?.startsWith("COINS-")
+      )
+
+      if (regularPromotions.length > 0) {
+        const promoCodes = regularPromotions.map((p: any) => p.code).join(", ")
+        throw new MedusaError(
+          MedusaError.Types.NOT_ALLOWED,
+          `Cannot use coins when promotion codes are applied. Please remove promotion codes (${promoCodes}) first.`
+        )
+      }
+
       return {
         items: cart.items.map((item: any) => ({
           variant_id: item.variant_id,
@@ -88,9 +101,16 @@ export const redeemPointsOnCartWorkflow = createWorkflow(
           application_method: {
             type: "fixed" as const,
             value: data.classificationResult.coin_items_currency_total,
-            target_type: "order" as const,
+            target_type: "items" as const,
             currency_code: cart.currency_code,
             allocation: "across" as const,
+            target_rules: [
+              {
+                attribute: "variant_id",
+                operator: "in" as const,
+                values: data.classificationResult.coin_variant_ids,
+              },
+            ],
           },
           rules: [
             {
