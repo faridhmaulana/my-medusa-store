@@ -12,12 +12,12 @@ import {
 } from "@medusajs/medusa/core-flows"
 import { updateCartPromotionsWorkflow } from "@medusajs/medusa/core-flows"
 import { PromotionActions } from "@medusajs/framework/utils"
-import { calculateCartPointTotalStep } from "./steps/calculate-cart-point-total"
-import { validateCartPointsOnlyStep } from "./steps/validate-cart-points-only"
+import { classifyCartItemsStep } from "./steps/classify-cart-items"
 
 type RedeemPointsOnCartWorkflowInput = {
   cart_id: string
   customer_id: string
+  variant_ids?: string[]
 }
 
 const CUSTOMER_ID_RULE_ATTR = "customer.id"
@@ -27,6 +27,7 @@ const cartFields = [
   "customer.*",
   "items.*",
   "items.product.*",
+  "items.unit_price",
   "promotions.*",
   "promotions.application_method.*",
   "promotions.rules.*",
@@ -53,24 +54,18 @@ export const redeemPointsOnCartWorkflow = createWorkflow(
     const itemsData = transform({ carts }, (data) => {
       const cart = data.carts[0] as any
       return {
-        variant_ids: cart.items
-          .map((item: any) => item.variant_id)
-          .filter(Boolean),
         items: cart.items.map((item: any) => ({
           variant_id: item.variant_id,
           quantity: item.quantity,
+          unit_price: item.unit_price,
         })),
       }
     })
 
-    const totalPointCost = calculateCartPointTotalStep({
+    const classificationResult = classifyCartItemsStep({
       items: itemsData.items,
-    })
-
-    validateCartPointsOnlyStep({
-      variant_ids: itemsData.variant_ids,
       customer_id: input.customer_id,
-      total_point_cost: totalPointCost,
+      selected_variant_ids: input.variant_ids,
     })
 
     acquireLockStep({
@@ -80,7 +75,7 @@ export const redeemPointsOnCartWorkflow = createWorkflow(
     })
 
     const promoToCreate = transform(
-      { carts, totalPointCost },
+      { carts, classificationResult },
       (data) => {
         const cart = data.carts[0] as any
         const randomStr = Math.random().toString(36).substring(2, 8)
@@ -92,7 +87,7 @@ export const redeemPointsOnCartWorkflow = createWorkflow(
           status: "active" as const,
           application_method: {
             type: "fixed" as const,
-            value: cart.total,
+            value: data.classificationResult.coin_items_currency_total,
             target_type: "order" as const,
             currency_code: cart.currency_code,
             allocation: "across" as const,
@@ -142,13 +137,14 @@ export const redeemPointsOnCartWorkflow = createWorkflow(
     })
 
     const cartMetadata = transform(
-      { carts, loyaltyPromo, totalPointCost },
+      { carts, loyaltyPromo, classificationResult },
       (data) => {
         const cart = data.carts[0] as any
         return {
           ...(cart.metadata || {}),
           points_promo_id: data.loyaltyPromo[0].id,
-          points_cost: data.totalPointCost,
+          points_cost: data.classificationResult.total_point_cost,
+          redeemed_variant_ids: data.classificationResult.coin_variant_ids,
         }
       }
     )

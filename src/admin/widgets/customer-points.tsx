@@ -88,7 +88,7 @@ const CustomerCoinsWidget = ({
 
       <form
         onSubmit={handleSubmit}
-        className="px-6 py-4 flex gap-2 items-end"
+        className="px-6 py-4 flex gap-2 items-center"
       >
         <Select
           value={action}
@@ -110,6 +110,7 @@ const CustomerCoinsWidget = ({
             value={coins}
             onChange={(e) => setCoins(e.target.value)}
             min={1}
+            size="small"
           />
         </div>
         <div className="flex-1 min-w-0">
@@ -117,6 +118,7 @@ const CustomerCoinsWidget = ({
             placeholder="Reason (optional)"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
+            size="small"
           />
         </div>
         <Button

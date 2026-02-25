@@ -4,7 +4,7 @@ import {
   authenticate,
 } from "@medusajs/framework/http"
 import { PostAdminCustomerPointsSchema, PostAdminVariantPointConfigSchema } from "./admin/validators"
-import { PostStoreRedeemPointsSchema } from "./store/validators"
+import { PostStoreRedeemPointsSchema, DeleteStoreRedeemPointsSchema } from "./store/validators"
 
 export default defineMiddlewares({
   routes: [
@@ -34,6 +34,14 @@ export default defineMiddlewares({
       middlewares: [
         authenticate("customer", ["session", "bearer"]),
         validateAndTransformBody(PostStoreRedeemPointsSchema),
+      ],
+    },
+    {
+      matcher: "/store/customers/me/points/redeem",
+      method: "DELETE",
+      middlewares: [
+        authenticate("customer", ["session", "bearer"]),
+        validateAndTransformBody(DeleteStoreRedeemPointsSchema),
       ],
     },
   ],

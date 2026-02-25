@@ -13,7 +13,7 @@ completeCartWorkflow.hooks.validate(
     const { data: carts } = await query.graph(
       {
         entity: "cart",
-        fields: ["id", "customer.*", "metadata"],
+        fields: ["id", "customer.*", "metadata", "items.*"],
         filters: {
           id: cart.id,
         },
@@ -23,12 +23,28 @@ completeCartWorkflow.hooks.validate(
       }
     )
 
-    const pointsCost = (carts[0] as any).metadata?.points_cost
+    const fullCart = carts[0] as any
+    const pointsCost = fullCart.metadata?.points_cost
+
+    // Guard: block checkout if cart has points-only items without coin redemption
+    for (const item of fullCart.items || []) {
+      const configs = await service.listVariantPointConfigs({
+        variant_id: item.variant_id,
+      })
+      const config = configs[0]
+      if (config?.payment_type === "points" && !pointsCost) {
+        throw new MedusaError(
+          MedusaError.Types.NOT_ALLOWED,
+          "Cart contains coins-only items. Please redeem coins before checkout."
+        )
+      }
+    }
+
     if (!pointsCost) {
       return
     }
 
-    const customerId = (carts[0] as any).customer?.id
+    const customerId = fullCart.customer?.id
     if (!customerId) {
       throw new MedusaError(
         MedusaError.Types.INVALID_DATA,
@@ -36,6 +52,7 @@ completeCartWorkflow.hooks.validate(
       )
     }
 
+    // Validate only — actual deduction happens in order.placed subscriber
     const balance = await service.getBalance(customerId)
     if (balance < pointsCost) {
       throw new MedusaError(
@@ -43,20 +60,5 @@ completeCartWorkflow.hooks.validate(
         `Insufficient coins. Required: ${pointsCost}, Available: ${balance}`
       )
     }
-
-    const balanceRecord = await service.getOrCreateBalance(customerId)
-    await service.updatePointBalances({
-      id: balanceRecord.id,
-      balance: balanceRecord.balance - pointsCost,
-    })
-
-    await service.createPointTransactions({
-      customer_id: customerId,
-      type: "spend",
-      points: pointsCost,
-      reason: "Coin redemption for order",
-      reference_id: cart.id,
-      reference_type: "cart",
-    })
   }
 )
