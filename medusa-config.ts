@@ -1,4 +1,4 @@
-import { loadEnv, defineConfig } from '@medusajs/framework/utils'
+import { loadEnv, defineConfig, Modules } from '@medusajs/framework/utils'
 
 loadEnv(process.env.NODE_ENV || 'development', process.cwd())
 
@@ -11,9 +11,36 @@ module.exports = defineConfig({
       authCors: process.env.AUTH_CORS!,
       jwtSecret: process.env.JWT_SECRET || "supersecret",
       cookieSecret: process.env.COOKIE_SECRET || "supersecret",
+      authMethodsPerActor: {
+        customer: ["supabase"],
+        user: ["emailpass"],
+      },
     }
   },
   modules: [
+    {
+      resolve: "@medusajs/medusa/auth",
+      dependencies: [
+        Modules.CUSTOMER,
+        "customerSupabaseLink",
+      ],
+      options: {
+        providers: [
+          {
+            resolve: "@medusajs/medusa/auth-emailpass",
+            id: "emailpass",
+          },
+          {
+            resolve: "./src/modules/supabase-auth-provider",
+            id: "supabase",
+            options: {
+              supabase_url: process.env.SUPABASE_URL,
+              supabase_service_role_key: process.env.SUPABASE_SERVICE_ROLE_KEY,
+            },
+          },
+        ],
+      },
+    },
     {
       resolve: "@medusajs/medusa/payment",
       options: {
@@ -48,6 +75,13 @@ module.exports = defineConfig({
     },
     {
       resolve: "./src/modules/pointBalance",
+    },
+    {
+      resolve: "./src/modules/customer-supabase-link",
+      options: {
+        supabase_url: process.env.SUPABASE_URL,
+        supabase_service_role_key: process.env.SUPABASE_SERVICE_ROLE_KEY,
+      },
     },
   ],
 })
