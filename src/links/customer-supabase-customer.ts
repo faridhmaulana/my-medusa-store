@@ -1,5 +1,5 @@
 import { defineLink } from "@medusajs/framework/utils"
-import CustomerSupabaseLinkModule from "../modules/customer-supabase-link"
+import CustomerSupabaseLinkModule from "../modules/customerSupabaseLink"
 import CustomerModule from "@medusajs/medusa/customer"
 
 /**

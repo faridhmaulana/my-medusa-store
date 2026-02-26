@@ -31,7 +31,7 @@ module.exports = defineConfig({
             id: "emailpass",
           },
           {
-            resolve: "./src/modules/supabase-auth-provider",
+            resolve: "./src/modules/supabaseAuthProvider",
             id: "supabase",
             options: {
               supabase_url: process.env.SUPABASE_URL,
@@ -77,7 +77,7 @@ module.exports = defineConfig({
       resolve: "./src/modules/pointBalance",
     },
     {
-      resolve: "./src/modules/customer-supabase-link",
+      resolve: "./src/modules/customerSupabaseLink",
       options: {
         supabase_url: process.env.SUPABASE_URL,
         supabase_service_role_key: process.env.SUPABASE_SERVICE_ROLE_KEY,

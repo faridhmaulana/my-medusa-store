@@ -1,7 +1,7 @@
 import { AbstractAuthModuleProvider, MedusaError } from "@medusajs/framework/utils"
 import { Logger } from "@medusajs/framework/types"
 import { createClient, SupabaseClient } from "@supabase/supabase-js"
-import CustomerSupabaseLinkModuleService from "../customer-supabase-link/service"
+import CustomerSupabaseLinkModuleService from "../customerSupabaseLink/service"
 import { ICustomerModuleService } from "@medusajs/framework/types"
 import { Modules } from "@medusajs/framework/utils"
 

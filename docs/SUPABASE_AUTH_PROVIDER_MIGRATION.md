@@ -51,9 +51,9 @@ await sdk.auth.login("customer", "supabase", {...})
 
 ### Module Structure
 
-**Auth Provider Module:** `src/modules/supabase-auth-provider/`
+**Auth Provider Module:** `src/modules/supabaseAuthProvider/`
 ```
-supabase-auth-provider/
+supabaseAuthProvider/
 ├── index.ts           # Module provider export (ModuleProvider)
 └── service.ts         # SupabaseAuthProviderService extends AbstractAuthModuleProvider
 ```
@@ -70,9 +70,9 @@ export default ModuleProvider(Modules.AUTH, {
 
 **IMPORTANT:** Auth providers must be exported using `ModuleProvider()`, not as a raw service class.
 
-**Customer-Supabase Link Module:** `src/modules/customer-supabase-link/`
+**Customer-Supabase Link Module:** `src/modules/customerSupabaseLink/`
 ```
-customer-supabase-link/
+customerSupabaseLink/
 ├── index.ts           # Module definition
 ├── service.ts         # Customer-Supabase linking operations
 ├── client.ts          # Supabase client wrapper
@@ -106,7 +106,7 @@ module.exports = defineConfig({
             id: "emailpass",
           },
           {
-            resolve: "./src/modules/supabase-auth-provider",
+            resolve: "./src/modules/supabaseAuthProvider",
             id: "supabase",
             options: {
               supabase_url: process.env.SUPABASE_URL,
@@ -118,7 +118,7 @@ module.exports = defineConfig({
     },
     // Customer-Supabase link module
     {
-      resolve: "./src/modules/customer-supabase-link",
+      resolve: "./src/modules/customerSupabaseLink",
       options: {
         supabase_url: process.env.SUPABASE_URL,
         supabase_service_role_key: process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -250,7 +250,7 @@ class SupabaseAuthProviderService extends AbstractAuthModuleProvider {
 
 If you're migrating from custom API routes to Auth Provider:
 
-- [x] Create `src/modules/supabase-auth-provider/` directory
+- [x] Create `src/modules/supabaseAuthProvider/` directory
 - [x] Implement `service.ts` extending `AbstractAuthModuleProvider`
 - [x] Register provider in `medusa-config.ts` under Auth Module
 - [x] Add `authMethodsPerActor` configuration
@@ -313,7 +313,7 @@ TypeError: moduleProviderServices is not iterable
 
 **Cause:** Auth provider module is exported incorrectly (as raw service class instead of ModuleProvider).
 
-**Solution:** Update `src/modules/supabase-auth-provider/index.ts`:
+**Solution:** Update `src/modules/supabaseAuthProvider/index.ts`:
 
 ```typescript
 // ❌ WRONG
